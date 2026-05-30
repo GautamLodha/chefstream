@@ -44,6 +44,7 @@ exports.getNearbyServices = async (req, res) => {
     }
 };
 exports.searchServices = async (req, res) => {
+    
     try {
         const { query, category } = req.query; // Extract category (mealType) from query params
         let filter = {};
@@ -272,6 +273,7 @@ exports.createService = async (req, res) => {
     }
 };
 exports.getMyServices = async (req, res) => {
+    const start = Date.now(); 
     try {
         const services = await Service.find({
             provider: req.user.userId
@@ -286,6 +288,7 @@ exports.getMyServices = async (req, res) => {
         console.log(err);
         res.status(500).json({ message: err.message });
     }
+    console.log(`[QUERY TIME] meal search: ${Date.now() - start}ms`);
 };
 exports.deleteService = async (req, res) => {
     try {
