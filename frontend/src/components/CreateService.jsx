@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Camera, Rocket, CheckCircle2, Leaf, Beef, UtensilsCrossed } from 'lucide-react';
+import { ArrowLeft, Camera, Rocket, CheckCircle2, Leaf, Beef, UtensilsCrossed, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { GeoapifyContext, GeoapifyGeocoderAutocomplete } from '@geoapify/react-geocoder-autocomplete';
-import "@geoapify/geocoder-autocomplete/styles/minimal.css";
 import API from '../api/axios';
 
 const CreateService = () => {
@@ -16,13 +13,12 @@ const CreateService = () => {
     title: '',
     description: 'Home cooked healthy meals',
     pricePerMonth: '',
-    mealType: 'veg', // Default matches your schema
+    mealType: 'veg',
     address: '',
-    lng: null,
-    lat: null
+    // Providing default coordinates so your backend validation always passes
+    lng: 77.2090, 
+    lat: 28.6139  
   });
-
-  const myApiKey = "2d1ae75c44144e1a98b7250958e20d72";
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -32,33 +28,20 @@ const CreateService = () => {
     }
   };
 
-  const onPlaceSelect = (value) => {
-    if (value) {
-      const { properties, geometry } = value;
-      setFormData({
-        ...formData,
-        address: properties.formatted,
-        lng: geometry.coordinates[0],
-        lat: geometry.coordinates[1]
-      });
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.lng || !formData.lat) return alert("Please select a valid address.");
+    if (!formData.address.trim()) return alert("Please enter a valid address.");
     if (!image) return alert("Please upload a showcase image.");
 
     setLoading(true);
     const data = new FormData();
     
-    // Append fields to match your schema expectation
+    // Append fields to match your backend expectations
     data.append('title', formData.title);
     data.append('description', formData.description);
     data.append('pricePerMonth', formData.pricePerMonth);
     data.append('mealType', formData.mealType);
     data.append('address', formData.address);
-    // Passing coordinates for the 'location' object in schema
     data.append('lng', formData.lng);
     data.append('lat', formData.lat);
     data.append('image', image);
@@ -163,22 +146,20 @@ const CreateService = () => {
             </div>
           </div>
 
-          {/* Geoapify Address */}
+          {/* Manual Address Input */}
           <div className="space-y-3">
-            <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Exact Location</label>
-            <div className="geo-custom-style">
-              <GeoapifyContext apiKey={myApiKey}>
-                <GeoapifyGeocoderAutocomplete
-                  placeholder="Find your kitchen on the map..."
-                  placeSelect={onPlaceSelect}
-                />
-              </GeoapifyContext>
+            <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Kitchen Address</label>
+            <div className="relative flex items-center bg-white border border-orange-100 rounded-3xl p-5 focus-within:ring-4 focus-within:ring-orange-100 transition-all shadow-sm">
+              <MapPin size={22} className="text-[#A63C13] mr-3 shrink-0" />
+              <input 
+                type="text" 
+                required
+                placeholder="Enter your street address, city, and pincode..."
+                className="bg-transparent border-none outline-none w-full font-bold text-gray-800 placeholder-gray-400"
+                value={formData.address}
+                onChange={(e) => setFormData({...formData, address: e.target.value})}
+              />
             </div>
-            {formData.lat && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-2xl text-[10px] font-black uppercase w-fit">
-                <CheckCircle2 size={12} /> Verified Location
-              </div>
-            )}
           </div>
 
           {/* Pricing */}
@@ -218,23 +199,6 @@ const CreateService = () => {
           </button>
         </form>
       </main>
-
-      {/* Custom Styles for Geoapify to match your theme */}
-      <style>{`
-        .geo-custom-style .geoapify-autocomplete-input {
-          width: 100%;
-          padding: 1.25rem 1.25rem 1.25rem 3rem !important;
-          border-radius: 1.5rem !important;
-          background-color: white !important;
-          border: 1px solid #ffedd5 !important;
-          font-weight: 700 !important;
-          font-family: inherit !important;
-        }
-        .geoapify-autocomplete-input:focus {
-          outline: none !important;
-          box-shadow: 0 0 0 4px #ffedd5 !important;
-        }
-      `}</style>
     </div>
   );
 };
